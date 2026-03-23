@@ -30,10 +30,10 @@ mongoose.connect(mongoUri)
   .catch((err) => {
     console.error('MongoDB connection error:', err.message);
     if (process.env.NODE_ENV === 'production') {
-      console.error('Production MongoDB connection failed. Check MONGODB_URI environment variable.');
-      process.exit(1);
+      console.error('Production MongoDB connection failed, but continuing without database...');
+      // Don't exit in production, just continue without DB
     } else {
-      console.log('Continuing without MongoDB connection...');
+      console.log('Development: Continuing without MongoDB connection...');
     }
   });
 
@@ -60,6 +60,16 @@ app.use("/", userRoutes);
 app.use("/", brandRoutes);
 app.use("/", designationRoutes);
 app.use("/", onboardingFileRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    mongoConnected: mongoose.connection.readyState === 1
+  });
+});
 
 // Plans endpoint (keep here for now)
 app.get("/plans", (req, res) => {
