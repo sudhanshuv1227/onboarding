@@ -4,7 +4,8 @@ const User = require('../models/user');
 const otps = {};
 
 function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Use static OTP from environment variables for development/testing
+  return process.env.STATIC_OTP || '1234';
 }
 
 exports.auth = async (req, res, next) => {
