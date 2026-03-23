@@ -5,24 +5,36 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 
+// Debug environment variables
+console.log('Environment variables loaded:');
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('MONGODB_URI value:', process.env.MONGODB_URI);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 // Ensure uploads directory exists
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
 }
 
-// MongoDB connection with fallback
-const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/riggle";
+// MongoDB connection - force Atlas URI in production
+const mongoUri = process.env.NODE_ENV === 'production' 
+  ? 'mongodb+srv://sudhanshumishra_db_user:MbecTtHVt6KoH2Oz@cluster0.zvt6mtp.mongodb.net/riggle?retryWrites=true&w=majority'
+  : (process.env.MONGODB_URI || 'mongodb://localhost:27017/riggle');
 
-mongoose
-  .connect(mongoUri)
+console.log('Connecting to MongoDB with URI:', mongoUri.replace(/\/\/.*@/, '//***:***@'));
+
+mongoose.connect(mongoUri)
   .then(() => {
-    console.log("Connected to MongoDB successfully");
+    console.log('Connected to MongoDB successfully');
   })
   .catch((err) => {
-    console.error("MongoDB connection error:", err.message);
-    console.log("Falling back to local MongoDB...");
-    // Fallback to local MongoDB
-    mongoose.connect("mongodb://localhost:27017/riggle");
+    console.error('MongoDB connection error:', err.message);
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Production MongoDB connection failed. Check MONGODB_URI environment variable.');
+      process.exit(1);
+    } else {
+      console.log('Continuing without MongoDB connection...');
+    }
   });
 
 const db = mongoose.connection;
