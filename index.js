@@ -61,6 +61,20 @@ app.use("/", brandRoutes);
 app.use("/", designationRoutes);
 app.use("/", onboardingFileRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Onboarding API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      plans: '/plans',
+      auth: '/auth',
+      verifyOtp: '/verify-otp'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
